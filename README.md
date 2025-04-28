@@ -1,4 +1,4 @@
-# Aurora RDS & ElastiCache Redis Hero Data Caching System
+# Aurora RDS & ElastiCache Redis Data Caching System
 
 ## Overview
 This project demonstrates building a **high-performance, scalable data service** using AWS serverless and managed services. The system stores and retrieves superhero data from an **Amazon Aurora MySQL** database, while improving read performance through **Amazon ElastiCache Redis** caching. The application is implemented with an **AWS Lambda** function written in Python.
