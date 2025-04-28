@@ -27,6 +27,20 @@ The architecture incorporates AWS Lambda for serverless compute, Aurora RDS for 
 
 The system design and implementation techniques shown here are directly applicable to real-world, production-grade cloud data pipelines.![Architecture Workflow](https://github.com/user-attachments/assets/585d70aa-79b5-4ebd-92b6-da59ca55557b)
 
+## List of Files in the Repository
+
+| File Name               | Description                                                   |
+|-------------------------|---------------------------------------------------------------|
+| **README.md**            | Project overview, setup instructions, and code examples.      |
+| **lambda_function.py**   | AWS Lambda function code interacting with Aurora RDS and Redis. |
+| **rds_setup.sql**        | SQL script for setting up Aurora RDS and inserting sample data. |
+| **redis_setup.sh**       | Shell script to set up the ElastiCache Redis cluster.         |
+| **requirements.txt**     | Python dependencies for the Lambda function.                  |
+| **config.json**          | Configuration file for AWS service details.                  |
+| **deploy_lambda.sh**     | Shell script to automate Lambda deployment.                  |
+| **LICENSE**              | Project license (MIT License).                               |
+| **example_input.json**   | Sample input for testing the Lambda function.                |
+| **output_example.json**  | Example of the Lambda function's output response.            |
 
 ## Key Technologies Used
 
