@@ -2,11 +2,11 @@ import pymysql
 import csv
 
 # Connection details
-host = "kris-aurora-cluster.cluster-csfwoeoec4om.us-east-1.rds.amazonaws.com"
-user = "admin"
-password = "AtThisbluedot123gz"
-database = "w5_cache_db"
-CSV_FILE_PATH = 'C:/Users/Kris OH/Documents/AWS Cloud Essential Course/Week 5 RDS & ElastiCache/week5_data.csv'
+host = ""
+user = ""
+password = ""
+database = ""
+CSV_FILE_PATH = ''
 TABLE_NAME = 'heroes'
 
 try:
