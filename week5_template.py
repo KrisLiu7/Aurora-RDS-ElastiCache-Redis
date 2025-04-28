@@ -6,12 +6,12 @@ import pymysql
 import time
 from urllib.parse import urlparse
 
-DB_HOST = "kris-aurora-cluster.cluster-csfwoeoec4om.us-east-1.rds.amazonaws.com"
-DB_USER = "admin"
-DB_PASS = "AtThisbluedot123gz"
-DB_NAME = "w5_cache_db"
+DB_HOST = ""
+DB_USER = ""
+DB_PASS = ""
+DB_NAME = ""
 DB_TABLE = "heroes"
-REDIS_URL = "redis://master.w5-redis-cluster.dtqqmb.use1.cache.amazonaws.com:6379"
+REDIS_URL = ""
 TTL = 60  # Time to Live for cached data (in seconds)
 
 logger = logging.getLogger()
