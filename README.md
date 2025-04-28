@@ -153,14 +153,14 @@ Edit
   ]
 }
 
-### Performance Comparison (Cache vs. No Cache)
+```Performance Comparison (Cache vs. No Cache)
 
 - **Without caching**: Every read operation queries Aurora, causing higher latency (~100-300ms).
 - **With caching**: Frequent reads are served in-memory from Redis with latency under 5ms.
-  
+
 **Impact**: Approximately 20x to 60x performance improvement, critical for scalable backend systems.
 
-### Conclusion
+## Conclusion
 
 This project highlights key Data Engineering skills:
 
@@ -170,6 +170,8 @@ This project highlights key Data Engineering skills:
 - Performance optimization for high-scale applications.
 
 The system design and implementation techniques shown here are directly applicable to real-world, production-grade cloud data pipelines.
+
+---
 
 **Author**: Kris Liu  
 **Project**: AWS Lambda - RDS - ElastiCache Hero Data Caching  
