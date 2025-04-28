@@ -25,7 +25,8 @@ The architecture incorporates AWS Lambda for serverless compute, Aurora RDS for 
 
 ## Conclusion
 
-The system design and implementation techniques shown here are directly applicable to real-world, production-grade cloud data pipelines.
+The system design and implementation techniques shown here are directly applicable to real-world, production-grade cloud data pipelines.![Architecture Workflow](https://github.com/user-attachments/assets/585d70aa-79b5-4ebd-92b6-da59ca55557b)
+
 
 ## Key Technologies Used
 
@@ -37,8 +38,8 @@ The system design and implementation techniques shown here are directly applicab
 
 ## Author
 **Kris Liu**
-Email: kris.shuyi.l@gmail.com
-GitHub: @KrisLiu7
+- Email: kris.shuyi.l@gmail.com
+- GitHub: @KrisLiu7
 
 ## Project
 
