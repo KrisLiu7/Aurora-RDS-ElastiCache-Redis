@@ -152,44 +152,25 @@ Edit
     }
   ]
 }
-Performance Comparison (Cache vs. No Cache)
-Without caching: Every read operation queries Aurora, causing higher latency (~100-300ms).
 
-With caching: Frequent reads are served in-memory from Redis with latency under 5ms.
+### Performance Comparison (Cache vs. No Cache)
 
-Impact: Approximately 20x to 60x performance improvement, critical for scalable backend systems.
+- **Without caching**: Every read operation queries Aurora, causing higher latency (~100-300ms).
+- **With caching**: Frequent reads are served in-memory from Redis with latency under 5ms.
+  
+**Impact**: Approximately 20x to 60x performance improvement, critical for scalable backend systems.
 
-Conclusion
+### Conclusion
+
 This project highlights key Data Engineering skills:
 
-Serverless architecture design using AWS managed services.
-
-Caching strategy implementation (lazy-loading and write-through).
-
-Secure cloud infrastructure deployment with IAM and VPC.
-
-Performance optimization for high-scale applications.
+- Serverless architecture design using AWS managed services.
+- Caching strategy implementation (lazy-loading and write-through).
+- Secure cloud infrastructure deployment with IAM and VPC.
+- Performance optimization for high-scale applications.
 
 The system design and implementation techniques shown here are directly applicable to real-world, production-grade cloud data pipelines.
 
-Author: Kris Liu
-Project: AWS Lambda - RDS - ElastiCache Hero Data Caching
-GitHub Repo: Aurora-RDS-ElastiCache-Redis
-
-This project was built as part of a cloud engineering lab to demonstrate real-world data engineering practices.
-
-yaml
-Copy
-Edit
-
----
-
-✅ Now when you paste this **directly into GitHub**, the formatting (tables, code blocks, bullets) will be perfect.  
-✅ No weird Word formatting.  
-✅ 100% ready.
-
----
-
-Would you also want me to quickly create a **basic architecture diagram** you can upload as `architecture.png` into your repo?  
-(Takes like 5 minutes and would make it look even more professional.) 🎨  
-Want me to?
+**Author**: Kris Liu  
+**Project**: AWS Lambda - RDS - ElastiCache Hero Data Caching  
+**GitHub Repo**: [Aurora-RDS-ElastiCache-Redis](URL)
