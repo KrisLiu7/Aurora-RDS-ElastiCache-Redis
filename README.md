@@ -1,178 +1,150 @@
-# Aurora RDS & ElastiCache Redis Data Caching System
 
-## Overview
-This project demonstrates building a **high-performance, scalable data service** using AWS serverless and managed services. The system stores and retrieves superhero data from an **Amazon Aurora MySQL** database, while improving read performance through **Amazon ElastiCache Redis** caching. The application is implemented with an **AWS Lambda** function written in Python.
+# Aurora-RDS-ElastiCache-Redis Project
 
-The primary goal is to show how caching reduces database load and improves latency in real-world cloud architectures — a critical skill for **Data Engineers**.
+This project demonstrates real-world Data Engineering practices using AWS services, specifically AWS Lambda, Aurora RDS, and Redis (ElastiCache). The goal is to implement a serverless architecture that incorporates caching to optimize the performance of a cloud-based data pipeline.
 
----
-
-## Project Files Overview
-
-| File | Description |
-| --- | --- |
-| `load_data.py` | Lambda function handling read/write logic between Redis and Aurora. |
-| `requirements.txt` | Lists Python libraries (`pymysql`, `redis`) needed for Lambda deployment. |
-| `RDS & ElastiCache.docx` | Assignment guide outlining project goals and requirements. |
-| `W5 Design Doc.docx` | Design document describing architecture and caching strategy. |
-| `w5_Hero_Cache_Lambda_Code.zip` | Full zipped Lambda code package including dependencies. |
-
----
-
-## Architecture
-
-| Component | Purpose |
-| --- | --- |
-| AWS Lambda | Handles read/write logic, connects to Redis and Aurora |
-| Amazon Aurora (RDS) | Relational database for superhero data |
-| Amazon ElastiCache Redis OSS | Fast in-memory cache for reducing RDS queries |
-| Amazon S3 | Storage for initial data loading into RDS |
-| AWS IAM | Access control across AWS services |
-| AWS VPC & Subnets | Networking setup for secure communication |
-| AWS CloudWatch Logs | Monitoring Lambda performance and errors |
-
-**Workflow:**
-- **Read Request:** Lambda → Redis (cache hit) or Aurora (cache miss) → Redis update → Return data.
-- **Write Request:** Lambda → Aurora database → Redis cache (write-through) update.
-
----
-
-## Tools and Technologies
-
-- **AWS Lambda** (Python runtime)
-- **Amazon Aurora MySQL (RDS)**
-- **Amazon ElastiCache Redis (OSS version)**
-- **Amazon S3** (for data import)
-- **AWS IAM** (Roles and Policies)
-- **AWS VPC** (Private networking)
-- **AWS CloudWatch Logs** (Monitoring and Debugging)
-- **Python 3.9**
-- **Libraries:** `pymysql`, `redis`, `json`, `time`
-
----
-
-## Key Implementation: Lambda Function
-
-Example logic for lazy-loading cache and write-through caching:
-
-```python
-import json
-import pymysql
-import redis
-import time
-
-def lambda_handler(event, context):
-    r = redis.StrictRedis(host='your_redis_endpoint', port=6379, decode_responses=True)
-    conn = pymysql.connect(host='your_rds_endpoint', user='admin', password='your_password', db='your_db')
-
-    start_time = time.time()
-
-    if event["REQUEST"] == "read":
-        result = []
-        for hero_id in event["SQLS"]:
-            cached = r.get(hero_id)
-            if cached:
-                result.append(json.loads(cached))
-            else:
-                with conn.cursor() as cur:
-                    cur.execute("SELECT * FROM heroes WHERE id=%s", (hero_id,))
-                    row = cur.fetchone()
-                    if row:
-                        hero_data = {"id": row[0], "name": row[1], "hero": row[2], "power": row[3], "xp": row[4], "color": row[5]}
-                        r.set(hero_id, json.dumps(hero_data))
-                        result.append(hero_data)
-
-    elif event["REQUEST"] == "write":
-        with conn.cursor() as cur:
-            for record in event["SQLS"]:
-                cur.execute("INSERT INTO heroes (hero, name, power, color, xp) VALUES (%s, %s, %s, %s, %s)",
-                            (record["hero"], record["name"], record["power"], record["color"], record["xp"]))
-                conn.commit()
-                if event["USE_CACHE"] == "True":
-                    r.set(record["name"], json.dumps(record))
-
-    execution_time = time.time() - start_time
-    print(f"Execution Time: {execution_time} seconds")
-
-    return {
-        "statusCode": 200,
-        "body": json.dumps(result)
-    }
-Setup Instructions
-Prepare AWS Services:
-
-Create an S3 bucket and upload the .csv dataset.
-
-Create an Amazon Aurora MySQL RDS Cluster.
-
-Create an ElastiCache Redis OSS cluster.
-
-Set up IAM roles and policies for Lambda.
-
-Deploy Lambda Function:
-
-Package pymysql and redis libraries with your code.
-
-Configure the Lambda to use the same VPC, subnets, and security groups as RDS and Redis.
-
-Set Lambda memory (e.g., 512MB+) and timeout (e.g., 30 seconds).
-
-Testing Lambda:
-
-Use the AWS Lambda console.
-
-Create test events based on request structures.
-
-Event Testing Examples
-Read Event Test:
-
-json
-Copy
-Edit
-{
-  "USE_CACHE": "True",
-  "REQUEST": "read",
-  "SQLS": [1, 2, 3]
-}
-Write Event Test:
-
-json
-Copy
-Edit
-{
-  "USE_CACHE": "True",
-  "REQUEST": "write",
-  "SQLS": [
-    {
-      "hero": "yes",
-      "name": "fireman",
-      "power": "fire",
-      "color": "red",
-      "xp": "10"
-    }
-  ]
-}
-
-```Performance Comparison (Cache vs. No Cache)
+## Performance Comparison (Cache vs. No Cache)
 
 - **Without caching**: Every read operation queries Aurora, causing higher latency (~100-300ms).
 - **With caching**: Frequent reads are served in-memory from Redis with latency under 5ms.
 
 **Impact**: Approximately 20x to 60x performance improvement, critical for scalable backend systems.
 
-## Conclusion
+## Key Data Engineering Skills Demonstrated
 
 This project highlights key Data Engineering skills:
 
-- Serverless architecture design using AWS managed services.
-- Caching strategy implementation (lazy-loading and write-through).
-- Secure cloud infrastructure deployment with IAM and VPC.
-- Performance optimization for high-scale applications.
+- **Serverless architecture design** using AWS managed services (AWS Lambda, Aurora, ElastiCache).
+- **Caching strategy implementation** (lazy-loading and write-through).
+- **Secure cloud infrastructure deployment** with IAM (Identity Access Management) and VPC (Virtual Private Cloud).
+- **Performance optimization** for high-scale applications with Redis caching.
+
+## Architecture Overview
+
+The architecture incorporates AWS Lambda for serverless compute, Aurora RDS for relational database storage, and Redis for caching through ElastiCache. The system is designed to minimize latency by serving frequent read operations from Redis while ensuring data integrity with Aurora RDS for write operations.
+
+## Conclusion
 
 The system design and implementation techniques shown here are directly applicable to real-world, production-grade cloud data pipelines.
 
----
+## Key Technologies Used
 
-**Author**: Kris Liu  
-**Project**: AWS Lambda - RDS - ElastiCache Hero Data Caching  
-**GitHub Repo**: [Aurora-RDS-ElastiCache-Redis](URL)
+- **AWS Lambda**: For running backend logic without provisioning servers.
+- **Aurora RDS**: For scalable relational database management.
+- **Redis**: For in-memory data caching.
+- **IAM**: For secure cloud access management.
+- **VPC**: For securing the network infrastructure.
+
+## Author
+
+**Kris Liu**
+
+## Project
+
+- **Name**: AWS Lambda - RDS - ElastiCache Hero Data Caching
+- **GitHub Repo**: [Aurora-RDS-ElastiCache-Redis](https://github.com/KrisLiu7/Aurora-RDS-ElastiCache-Redis)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+
+## Code for AWS Lambda - RDS - ElastiCache Integration
+
+### AWS Lambda Function Code (Python Example)
+
+This is a basic example of how to implement AWS Lambda to interact with Aurora RDS and ElastiCache Redis.
+
+```python
+import json
+import boto3
+import redis
+from botocore.exceptions import NoCredentialsError
+
+# Connect to RDS (Aurora) and Redis
+rds_client = boto3.client('rds-data')
+redis_client = redis.StrictRedis(host='your-redis-endpoint', port=6379, db=0)
+
+def lambda_handler(event, context):
+    # Example: Get data from Redis Cache
+    cache_key = 'user_data:' + str(event['user_id'])
+    cached_data = redis_client.get(cache_key)
+    
+    if cached_data:
+        # Return data from Redis cache if available
+        return {
+            'statusCode': 200,
+            'body': json.dumps({'data': cached_data.decode('utf-8'), 'source': 'cache'})
+        }
+    
+    # If not found in cache, query Aurora RDS (MySQL-compatible)
+    try:
+        response = rds_client.execute_statement(
+            resourceArn='arn:aws:rds:region:account-id:cluster:aurora-cluster',
+            secretArn='arn:aws:secretsmanager:region:account-id:secret:secret-id',
+            database='your_database',
+            sql='SELECT * FROM users WHERE user_id = :user_id',
+            parameters=[{'name': 'user_id', 'value': {'longValue': event['user_id']}}]
+        )
+        
+        user_data = response['records'][0]
+        
+        # Cache the data in Redis for future use
+        redis_client.set(cache_key, json.dumps(user_data))
+        
+        return {
+            'statusCode': 200,
+            'body': json.dumps({'data': user_data, 'source': 'database'})
+        }
+    
+    except NoCredentialsError as e:
+        return {
+            'statusCode': 403,
+            'body': json.dumps({'error': str(e)})
+        }
+```
+
+### Aurora RDS Setup
+
+1. **Create a MySQL-Compatible Aurora Cluster**:
+   - In AWS Console, navigate to RDS > Databases > Create Database.
+   - Choose "Amazon Aurora" and select a MySQL-compatible edition.
+   - Configure your cluster settings and database parameters.
+
+2. **Create a Table for Storing User Data**:
+
+```sql
+CREATE TABLE users (
+    user_id INT PRIMARY KEY,
+    username VARCHAR(255),
+    email VARCHAR(255)
+);
+```
+
+3. **Inserting Sample Data**:
+
+```sql
+INSERT INTO users (user_id, username, email) VALUES (1, 'JohnDoe', 'john.doe@example.com');
+```
+
+### ElastiCache (Redis) Setup
+
+1. **Create an ElastiCache Cluster**:
+   - In the AWS Console, navigate to ElastiCache > Redis > Create.
+   - Select the appropriate instance type and configuration.
+
+2. **Connecting Redis to Your Application**:
+   - In the Lambda function, you’ll connect to your Redis cluster using the `redis-py` client.
+   - Make sure to provide the Redis endpoint and port in your Lambda function.
+
+```bash
+pip install redis
+```
+
+3. **Caching Strategy**: The caching layer follows a **lazy-loading** approach, where data is only fetched from the database when it’s not found in the cache.
+
+```python
+# Example of caching strategy in Lambda
+def cache_data(key, data):
+    redis_client.set(key, json.dumps(data))
+```
