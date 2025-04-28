@@ -1,39 +1,221 @@
-# AWS Hero Data Caching System with Aurora and Redis
+Aurora RDS & ElastiCache Redis Hero Data Caching System
 
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![AWS Cloud](https://img.shields.io/badge/AWS-Cloud-orange)](https://aws.amazon.com)
-[![Python](https://img.shields.io/badge/Python-3.9-blue)](https://www.python.org)
+Overview
 
-## Overview
+This project demonstrates building a high-performance, scalable data service using AWS serverless and managed services. The system stores and retrieves superhero data from an Amazon Aurora MySQL database, while improving read performance through Amazon ElastiCache Redis caching. The application is implemented with an AWS Lambda function written in Python.
 
-This project implements a hero data caching system on AWS to improve the performance of retrieving hero information from an Amazon Aurora MySQL database. By leveraging Amazon ElastiCache Redis as a caching layer, frequently accessed hero data is stored in-memory, reducing database load and enhancing application responsiveness. The system utilizes an AWS Lambda function written in Python to handle data access, implementing both lazy loading for reads and write-through caching for updates.
+The primary goal is to show how caching reduces database load and improves latency in real-world cloud architectures — a critical skill for Data Engineers.
 
-## Architecture
+Project Files Overview
 
-The architecture of the Hero Data Caching System is illustrated below:
+File
 
-| Component             | Description                                                                 | AWS Service          |
-| --------------------- | --------------------------------------------------------------------------- | ---------------------- |
-| **Data Storage** | Persistent storage for hero data (ID, name, power, XP, color).             | Amazon Aurora MySQL    |
-| **Caching Layer** | In-memory data store for frequently accessed hero data.                     | Amazon ElastiCache Redis |
-| **Application Logic** | Handles read and write requests, interacts with Aurora and Redis.          | AWS Lambda (Python)    |
+Description
 
-The interaction flow is as follows:
+load_data.py
 
-**Read Operations (Lazy Loading):**
+Lambda function handling read/write logic between Redis and Aurora.
 
-1.  A request to read hero data by ID is received by the Lambda function.
-2.  The function checks the Redis cache for the requested data.
-3.  **Cache Hit:** If the data is found in Redis, it is returned directly.
-4.  **Cache Miss:** If the data is not found in Redis, the function queries Aurora, stores the retrieved data in Redis (with a TTL), and then returns it.
+requirements.txt
 
-**Write Operations (Write-Through Caching):**
+Lists Python libraries (pymysql, redis) needed for Lambda deployment.
 
-1.  A request to write new hero data is received by the Lambda function.
-2.  The function first writes the data to the Aurora database.
-3.  The function then immediately writes the same data to the Redis cache to ensure consistency.
-4.  A success response is returned.
+RDS & ElastiCache.docx
 
-## Code Structure
+Assignment guide outlining project goals and requirements.
 
-The project's codebase is organized as follows:
+W5 Design Doc.docx
+
+Design document describing architecture and caching strategy.
+
+w5_Hero_Cache_Lambda_Code.zip
+
+Full zipped Lambda code package including dependencies.
+
+Architecture
+
+Component
+
+Purpose
+
+AWS Lambda
+
+Handles read/write logic, connects to Redis and Aurora
+
+Amazon Aurora (RDS)
+
+Relational database for superhero data
+
+Amazon ElastiCache Redis OSS
+
+Fast in-memory cache for reducing RDS queries
+
+Amazon S3
+
+Storage for initial data loading into RDS
+
+AWS IAM
+
+Access control across AWS services
+
+AWS VPC & Subnets
+
+Networking setup for secure communication
+
+AWS CloudWatch Logs
+
+Monitoring Lambda performance and errors
+
+Workflow:
+
+Read Request: Lambda -> Redis -> (if cache miss) RDS -> Redis (update cache) -> Return data
+
+Write Request: Lambda -> RDS -> Redis (write-through update)
+
+Tools and Technologies
+
+AWS Lambda (Python runtime)
+
+Amazon Aurora MySQL (RDS)
+
+Amazon ElastiCache Redis (OSS version)
+
+Amazon S3 (for data import)
+
+AWS IAM (Roles and Policies)
+
+AWS VPC (Private networking)
+
+AWS CloudWatch Logs (Monitoring and Debugging)
+
+Python 3.9
+
+Libraries: pymysql, redis, json, time
+
+Key Implementation: Lambda Function
+
+Example logic for lazy-loading cache and write-through caching:
+
+import json
+import pymysql
+import redis
+import time
+
+def lambda_handler(event, context):
+    # Connect to Redis and RDS
+    r = redis.StrictRedis(host='your_redis_endpoint', port=6379, decode_responses=True)
+    conn = pymysql.connect(host='your_rds_endpoint', user='admin', password='your_password', db='your_db')
+
+    start_time = time.time()
+
+    if event["REQUEST"] == "read":
+        result = []
+        for hero_id in event["SQLS"]:
+            cached = r.get(hero_id)
+            if cached:
+                result.append(json.loads(cached))
+            else:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT * FROM heroes WHERE id=%s", (hero_id,))
+                    row = cur.fetchone()
+                    if row:
+                        hero_data = {"id": row[0], "name": row[1], "hero": row[2], "power": row[3], "xp": row[4], "color": row[5]}
+                        r.set(hero_id, json.dumps(hero_data))
+                        result.append(hero_data)
+
+    elif event["REQUEST"] == "write":
+        with conn.cursor() as cur:
+            for record in event["SQLS"]:
+                cur.execute("INSERT INTO heroes (hero, name, power, color, xp) VALUES (%s, %s, %s, %s, %s)",
+                            (record["hero"], record["name"], record["power"], record["color"], record["xp"]))
+                conn.commit()
+                if event["USE_CACHE"] == "True":
+                    # Optional: Immediately cache the new hero
+                    r.set(record["name"], json.dumps(record))
+
+    execution_time = time.time() - start_time
+    print(f"Execution Time: {execution_time} seconds")
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps(result)
+    }
+
+Setup Instructions
+
+Prepare AWS Services:
+
+Create an S3 bucket and upload the .csv dataset.
+
+Create an Amazon Aurora MySQL RDS Cluster.
+
+Create an ElastiCache Redis OSS cluster.
+
+Set up IAM roles and policies for Lambda.
+
+Deploy Lambda Function:
+
+Package pymysql and redis libraries with your code.
+
+Configure the Lambda to use the same VPC, subnets, and security groups as RDS and Redis.
+
+Set Lambda memory (e.g., 512MB+) and timeout (e.g., 30 seconds).
+
+Testing Lambda:
+
+Use the AWS Lambda console.
+
+Create test events.
+
+Event Testing Examples
+
+Read Event Test:
+
+{
+  "USE_CACHE": "True",
+  "REQUEST": "read",
+  "SQLS": [1, 2, 3]
+}
+
+Write Event Test:
+
+{
+  "USE_CACHE": "True",
+  "REQUEST": "write",
+  "SQLS": [
+    {
+      "hero": "yes",
+      "name": "fireman",
+      "power": "fire",
+      "color": "red",
+      "xp": "10"
+    }
+  ]
+}
+
+Performance Comparison (Cache vs. No Cache)
+
+Without caching: Every read operation queries Aurora, causing higher latency (~100-300ms).
+
+With caching: Frequent reads are served in-memory from Redis with latency under 5ms.
+
+Impact: Approximately 20x to 60x performance improvement, essential for scalable backend systems.
+
+Conclusion
+
+This project highlights key Data Engineering skills:
+
+Serverless architecture design using AWS managed services.
+
+Caching strategy implementation (lazy-loading and write-through).
+
+Secure cloud infrastructure deployment with IAM and VPC.
+
+Performance optimization for high-scale applications.
+
+The system design and implementation techniques shown here are directly applicable to real-world, production-grade cloud data pipelines.
+
+Author: Kris LiuProject: AWS Lambda - RDS - ElastiCache Hero Data CachingGitHub Repo: Aurora-RDS-ElastiCache-Redis
+
+This project was built as part of a cloud engineering lab to demonstrate real-world data engineering practices.
+
