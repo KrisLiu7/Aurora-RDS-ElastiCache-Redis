@@ -36,8 +36,9 @@ The system design and implementation techniques shown here are directly applicab
 - **VPC**: For securing the network infrastructure.
 
 ## Author
-
 **Kris Liu**
+Email: kris.shuyi.l@gmail.com
+GitHub: @KrisLiu7
 
 ## Project
 
