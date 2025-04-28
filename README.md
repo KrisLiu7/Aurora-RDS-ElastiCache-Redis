@@ -1,6 +1,6 @@
 # Aurora-RDS-ElastiCache-Redis
 
-# Hero Data Caching System with Aurora and Redis
+# Data Caching System with Aurora and Redis
 
 This repository contains the code and documentation for a hero data caching system implemented on AWS. The system uses Amazon Aurora MySQL for persistent storage and Amazon ElastiCache Redis for caching, with an AWS Lambda function handling data access.
 
